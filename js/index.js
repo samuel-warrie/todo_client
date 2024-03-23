@@ -5,26 +5,95 @@ const todos = new Todos(BACKEND_ROOT_URL);
 
 const list = document.querySelector("ul");
 const input = document.querySelector("input");
-// input.disabled = true;
+input.disabled = true; //
 // console.log('testing');
+
 const renderTask = (task) => {
   const li = document.createElement("li");
   li.setAttribute("class", "list-group-item");
-  li.innerHTML = task;
+  li.setAttribute("data-key", task.getId().toString());
+  renderSpan(li, task.getText()); // Render the text inside a span
+  renderLink(li, task.getId());
   list.append(li);
 };
 
+const renderSpan = (li, text) => {
+  const span = document.createElement("span"); // Create a new span element
+  span.textContent = text; // Set the text content of the span
+  li.appendChild(span); // Append the span to the list item
+};
+
+const renderLink = (li, id) => {
+  const a = document.createElement("a");
+  a.innerHTML = '<i class="bi bi-trash"></i>';
+  a.setAttribute("style", "float: right");
+  a.addEventListener("click", (event) => {
+    todos
+      .removeTask(id)
+      .then((removed_id) => {
+        const li_to_remove = document.querySelector(
+          `[data-key = '${removed_id}']`
+        );
+        if (li_to_remove) {
+          list.removeChild(li_to_remove);
+        }
+      })
+      .catch((error) => {
+        alert(error);
+      });
+  });
+  li.appendChild(a);
+};
+
+
+// const renderTask = (task) => {
+//   // console.log(task);
+//   const li = document.createElement('li');
+//   li.setAttribute('class', 'list-group-item');
+//   li.setAttribute('data-key', task.getId().toString());
+//   li.innerHTML = task.getText();
+//   renderSpan(li, task.getText());
+//   renderLink(li, task.getId());
+//   list.append(li);
+// };
+
+// const renderSpan = (li, text) => {
+//   const span = li.appendChild(document.createElement('span'));
+//   span.innerhtml = text;
+// };
+
+// const renderLink = (li, id) => {
+//   const a = li.appendChild(document.createElement('a'));
+//   a.innerhtml = '<i class="fa fa-trash"></i>';
+//   a.setAttribute('style','float: right');
+//   a.addEventListener("click", (event) => {
+//     todos
+//       .removeTask(id)
+//       .then((removed_id) => {
+//         const li_to_remove = document.querySelector(
+//           `[data-key = '${removed_id}']`
+//         );
+//         if (li_to_remove) {
+//           list.removeChild(li_to_remove);
+//         }
+//       })
+//       .catch((error) => {
+//         alert(error);
+//       });
+//   });
+// };
 const getTasks = () => {
   todos
-  .getTasks()
-  .then((tasks) => {
-    tasks.forEach(task => {
-      renderTask(task);
+    .getTasks()
+    .then((tasks) => {
+      tasks.forEach((task) => {
+        renderTask(task);
+      });
+      input.disabled = false;
+    })
+    .catch((error) => {
+      alert(error);
     });
-  })
-  .catch((error) => {
-    alert(error);
-  });
 };
 
 const saveTask = async (task) => {
@@ -43,7 +112,6 @@ const saveTask = async (task) => {
   }
 };
 
-
 input.addEventListener("keypress", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -51,7 +119,7 @@ input.addEventListener("keypress", (event) => {
     if (task !== " ") {
       todos.addTask(task).then((task) => {
         renderTask(task);
-        input.value = " ";
+        input.value = "";
         input.focus();
       });
     } else {
@@ -60,3 +128,4 @@ input.addEventListener("keypress", (event) => {
   }
 });
 getTasks();
+// saveTask();/

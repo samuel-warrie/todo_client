@@ -2,18 +2,16 @@ import { Task } from "./Task.js";
 
 class Todos {
   #tasks = [];
-  #backend_url = '';
+  #backend_url = "";
   constructor(url) {
     this.#backend_url = url;
   }
   getTasks = () => {
-    return new Promise(async(resolve, reject) => {
-      console.log(this.#backend_url);
+    return new Promise(async (resolve, reject) => {
       fetch(this.#backend_url)
         .then((response) => response.json())
         .then(
           (json) => {
-            console.log(json);
             this.#readJson(json);
             resolve(this.#tasks);
           },
@@ -55,6 +53,29 @@ class Todos {
     const task = new Task(id, text);
     this.#tasks.push(task);
     return task;
+  };
+
+  #removeFromArray = (id) => {
+    const arrayWithoutRemoved = this.#tasks.filter((task) => task.id !== id);
+    this.#tasks = arrayWithoutRemoved;
+  };
+
+  removeTask = (id) => {
+    return new Promise(async (resolve, reject) => {
+      fetch(this.#backend_url + "/delete/" + id, {
+        method: "delete",
+      })
+        .then((response) => response.json())
+        .then(
+          (json) => {
+            this.#removeFromArray(id);
+            resolve(json.id);
+          },
+          (error) => {
+            reject(error);
+          }
+        );
+    });
   };
 }
 
